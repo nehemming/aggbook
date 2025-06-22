@@ -1,5 +1,5 @@
 
-[![Build Status](https://github.com/nehemming/aggbook/actions/workflows/release.yml/badge.svg?branch=main)](https://github.com/nehemming/aggbook/actions/workflows/release.yml)
+[![Test, Build, and Release](https://github.com/nehemming/aggbook/actions/workflows/release.yml/badge.svg)](https://github.com/nehemming/aggbook/actions/workflows/release.yml)
 [![codecov](https://codecov.io/gh/nehemming/aggbook/graph/badge.svg?token=aLearRYwfl)](https://codecov.io/gh/nehemming/aggbook)
 [![License](https://img.shields.io/github/license/nehemming/aggbook.svg)](https://github.com/nehemming/aggbook/blob/main/LICENSE)
 
