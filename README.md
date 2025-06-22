@@ -1,7 +1,7 @@
 
 [![Build Status](https://github.com/nehemming/aggbook/actions/workflows/release.yml/badge.svg?branch=main)](https://github.com/nehemming/aggbook/actions/workflows/release.yml)
 [![codecov](https://codecov.io/gh/nehemming/aggbook/graph/badge.svg?token=aLearRYwfl)](https://codecov.io/gh/nehemming/aggbook)
-[![License](https://img.shields.io/github/license/nehemming/aggbook)](https://github.com/nehemming/aggbook/blob/main/LICENSE)
+[![License](https://img.shields.io/github/license/nehemming/aggbook.svg)](https://github.com/nehemming/aggbook/blob/main/LICENSE)
 
 > ⚠️ **Beta Release**: This library is currently under active development. Its components and behavior are subject to change. Feedback and issues are welcome.
 It is intended to demonstrate implementation technique rather than hardened production code.
