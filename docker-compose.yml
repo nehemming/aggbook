@@ -1,0 +1,22 @@
+services:
+  aggserver:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    ports:
+      - "8099:8099"
+    command: ["--port", "8099","--listen-interface", "0.0.0.0"]
+    stop_signal: SIGINT
+    
+    restart: unless-stopped
+
+  aggclient:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    depends_on:
+      - aggserver
+    command: ["--server-addr", "http://aggserver:8099"]
+    stop_signal: SIGINT
+    tty: true
+    restart: unless-stopped

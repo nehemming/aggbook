@@ -1,0 +1,9 @@
+[workspace]
+resolver = "3"
+members = [
+    "crates/aggcommon",
+    "crates/aggserver",
+    "crates/aggclient"
+]
+
+# [workspace.dependencies]

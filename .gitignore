@@ -1,0 +1,38 @@
+# === Cargo build artifacts ===
+/target/
+**/target/
+
+# === Rust's incremental compilation files ===
+/**/*.rs.bk
+
+# === IDE/editor files ===
+/.idea/
+/.vscode/
+/*.swp
+*.swo
+*.swn
+*.bak
+*.tmp
+
+# === OS-specific files ===
+.DS_Store
+Thumbs.db
+
+# === Generated proto code ===
+/crates/aggcommon/src/proto/*.rs
+
+# === Optional: logs, dumps, etc ===
+*.log
+
+# === Optional: dotenv files ===
+.env
+.env.*
+
+# === Optional: binaries ===
+/crates/aggserver/aggserver
+/crates/aggclient/aggclient
+
+# === Optional: Cargo.lock at workspace root if not used ===
+/Cargo.lock
+
+lcov.info

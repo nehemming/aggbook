@@ -1,0 +1,154 @@
+name: Test, Build, and Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    name: Run Tests (Linux)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          components: rustfmt, clippy
+
+      - name: Install protoc on Linux
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+        shell: bash
+
+      - name: Install cargo-llvm-cov
+        run: cargo install cargo-llvm-cov
+
+      - name: Run tests, coverage and lint
+        shell: bash
+        run: |
+          cargo clippy --workspace --all-targets --all-features -- -D warnings
+          cargo llvm-cov --workspace --lcov --output-path lcov.info
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: lcov.info
+          token: ${{ secrets.CODECOV_TOKEN }} # Only required for private repos
+
+  build:
+    name: Build and Release (${{ matrix.os }})
+    needs: test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            archive: tar.gz
+          - os: macos-latest
+            target: universal-apple-darwin
+            archive: tar.gz
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            archive: zip
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Install targets (macOS)
+        if: matrix.os == 'macos-latest'
+        run: rustup target add x86_64-apple-darwin aarch64-apple-darwin
+        shell: bash
+
+      - name: Install target (others)
+        if: matrix.os != 'macos-latest'
+        run: rustup target add ${{ matrix.target }}
+        shell: bash
+
+      - name: Install protoc on Linux
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+        shell: bash
+
+      - name: Install protoc on macOS
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install protobuf
+        shell: bash
+
+      - name: Install protoc on Windows
+        if: matrix.os == 'windows-latest'
+        run: |
+          Invoke-WebRequest -Uri https://github.com/protocolbuffers/protobuf/releases/download/v21.12/protoc-21.12-win64.zip -OutFile protoc.zip
+          Expand-Archive protoc.zip -DestinationPath $env:USERPROFILE\protoc
+          echo "$env:USERPROFILE\protoc\bin" | Out-File -Append -FilePath $env:GITHUB_PATH
+        shell: pwsh
+
+      - name: Build macOS universal binaries
+        if: matrix.os == 'macos-latest'
+        run: |
+          cargo build --release -p aggclient --target=x86_64-apple-darwin
+          cargo build --release -p aggclient --target=aarch64-apple-darwin
+          cargo build --release -p aggserver --target=x86_64-apple-darwin
+          cargo build --release -p aggserver --target=aarch64-apple-darwin
+          mkdir -p universal dist
+          lipo -create -output universal/aggclient \
+            target/x86_64-apple-darwin/release/aggclient \
+            target/aarch64-apple-darwin/release/aggclient
+          lipo -create -output universal/aggserver \
+            target/x86_64-apple-darwin/release/aggserver \
+            target/aarch64-apple-darwin/release/aggserver
+          tar -czf dist/aggbook-universal-apple-darwin.tar.gz -C universal aggclient aggserver
+        shell: bash
+
+      - name: Build Linux binaries
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          cargo build --release -p aggclient --target=${{ matrix.target }}
+          cargo build --release -p aggserver --target=${{ matrix.target }}
+          mkdir -p dist
+          tar -czf dist/aggbook-${{ matrix.target }}.tar.gz -C target/${{ matrix.target }}/release aggclient aggserver
+        shell: bash
+
+      - name: Build Windows binaries
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          cargo build --release -p aggclient --target=${{ matrix.target }}
+          cargo build --release -p aggserver --target=${{ matrix.target }}
+
+          New-Item -ItemType Directory -Path dist -Force | Out-Null
+
+          $paths = @(
+            "target\${{ matrix.target }}\release\aggclient.exe",
+            "target\${{ matrix.target }}\release\aggserver.exe"
+          )
+          Compress-Archive -Path $paths -DestinationPath "dist\aggbook-${{ matrix.target }}.zip"
+
+      - name: Upload Release Asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          tag_name: ${{ github.ref_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

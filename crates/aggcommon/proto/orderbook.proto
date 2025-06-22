@@ -1,0 +1,24 @@
+syntax = "proto3";
+package orderbook;
+service OrderbookAggregator {
+    rpc BookSummary(Empty) returns (stream Summary);
+    rpc BookSummaryForSymbol(SummaryRequest) returns (stream Summary);
+}
+message Empty {}
+message SummaryRequest {
+    string symbol = 1;
+}
+
+message Summary {
+    double spread = 1;
+    repeated Level bids = 2;
+    repeated Level asks = 3;
+
+    uint64 arrival_time = 40; // Time in nanoseconds since epoch of data arriving in grpc service. 
+}
+
+message Level {
+    string exchange = 1;
+    double price = 2;
+    double amount = 3;
+}

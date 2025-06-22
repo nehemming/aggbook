@@ -1,0 +1,25 @@
+# ─── Stage 1: Build ─────────────────────────────────────────────
+FROM rust:bullseye AS builder
+
+# Install packages including protoc
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    ca-certificates \
+    gnupg \
+    protobuf-compiler \
+    pkg-config \
+    libssl-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY . .
+
+RUN cargo build --release -p aggclient
+
+# ─── Stage 2: Runtime ───────────────────────────────────────────
+FROM debian:bullseye-slim
+
+WORKDIR /app
+COPY --from=builder /app/target/release/aggclient .
+STOPSIGNAL SIGINT
+ENTRYPOINT ["./aggclient"]

@@ -1,0 +1,14 @@
+[package]
+name = "aggclient"
+version = "0.2.0"
+edition = "2024"
+
+[dependencies]
+tokio = { version = "1.38", features = ["full"] }
+tonic = { version = "0.13.1" }
+tokio-stream = "0.1"
+tracing = "0.1"
+anyhow = "1.0"
+clap = { version = "4.5", features = ["derive"] }
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+aggcommon = { path = "../aggcommon" }

@@ -1,0 +1,18 @@
+[package]
+name = "aggcommon"
+version = "0.2.0"
+edition = "2024"
+
+
+[dependencies]
+tokio = { version = "1.45", features = ["full"] }
+tonic = { version = "0.13.1", features = ["transport"] }
+prost = "0.13.5"
+anyhow = "1.0"
+futures = "0.3.31"
+tracing = "0.1"
+dashmap = "5"
+humantime = "2.1"
+
+[build-dependencies]
+tonic-build = "0.13.1"
