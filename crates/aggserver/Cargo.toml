@@ -37,3 +37,10 @@ url = "2.5.4"
 futures-util = "0.3.31"
 async-stream = "0.3.6"
 
+
+[dev-dependencies]
+criterion = "0.5"
+
+[[bench]]
+name = "bench"
+harness = false
